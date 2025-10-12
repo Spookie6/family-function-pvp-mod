@@ -1,0 +1,48 @@
+{
+	"schemaVersion": 1,
+	"id": "family-function",
+	"version": "${version}",
+	"name": "Family Function",
+	"description": "This is an example description! Tell everyone what your mod is about!",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/family-function/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "com.github.spookie6.FamilyFunction",
+				"adapter": "kotlin"
+			}
+		],
+		"client": [
+			{
+				"value": "com.github.spookie6.FamilyFunctionClient",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		"family-function.mixins.json",
+		{
+			"config": "family-function.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": "~1.21.9",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

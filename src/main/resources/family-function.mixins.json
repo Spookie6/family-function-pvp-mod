@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.github.spookie6.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MixinEndPortalBlock"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+	}
+}
