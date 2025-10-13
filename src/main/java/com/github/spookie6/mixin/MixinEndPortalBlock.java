@@ -11,6 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @Mixin(EndPortalBlock.class)
 public class MixinEndPortalBlock {
 
+    @Unique
     private static final Set<UUID> warnedPlayers = new HashSet<>();
 
     static {
@@ -35,8 +37,9 @@ public class MixinEndPortalBlock {
                     it.remove();
                     continue;
                 }
-                BlockState block = player.getEntityWorld().getBlockState(player.getBlockPos());
-                if (block.getBlock() != Blocks.END_PORTAL) {
+                BlockState block_bottom = player.getEntityWorld().getBlockState(player.getBlockPos());
+                BlockState block_top = player.getEntityWorld().getBlockState(player.getBlockPos().up());
+                if (block_bottom.getBlock() != Blocks.END_PORTAL && block_top.getBlock() != Blocks.END_PORTAL) {
                     it.remove();
                 }
             }
@@ -44,15 +47,14 @@ public class MixinEndPortalBlock {
     }
 
     @Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
-    private void disableEndPortal(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, CallbackInfo ci) {
+    private void disableEndPortal(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl, CallbackInfo ci) {
         if (entity instanceof ServerPlayerEntity player) {
 
             if (!warnedPlayers.contains(player.getUuid())) {
-                player.sendMessage(net.minecraft.text.Text.of("§cThe End is disabled on this server!"), false);
+                player.sendMessage(net.minecraft.text.Text.of("§cThe End is disabled!"), false);
                 warnedPlayers.add(player.getUuid());
             }
-
-            ci.cancel();
         }
+        ci.cancel();
     }
 }
