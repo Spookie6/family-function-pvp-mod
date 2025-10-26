@@ -71,7 +71,7 @@ object WSClient {
                 client.webSocket(
                     method = HttpMethod.Get,
                     host = "127.0.0.1",
-                    port = 8080,
+                    port = 443,
                     path = "/"
                 ) {
                     FamilyFunction.logger.info("WSClient: Connected to websocket server!")
