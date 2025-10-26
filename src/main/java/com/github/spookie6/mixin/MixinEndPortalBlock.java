@@ -47,7 +47,7 @@ public class MixinEndPortalBlock {
     }
 
     @Inject(method = "onEntityCollision", at = @At("HEAD"), cancellable = true)
-    private void disableEndPortal(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl, CallbackInfo ci) {
+    private void familyfunction$disableEndPortal(BlockState state, World world, BlockPos pos, Entity entity, EntityCollisionHandler handler, boolean bl, CallbackInfo ci) {
         if (entity instanceof ServerPlayerEntity player) {
 
             if (!warnedPlayers.contains(player.getUuid())) {

@@ -3,7 +3,8 @@
   "package": "com.github.spookie6.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MixinEndPortalBlock"
+    "MixinEndPortalBlock",
+    "MixinVillagerEntity"
   ],
   "injectors": {
     "defaultRequire": 1

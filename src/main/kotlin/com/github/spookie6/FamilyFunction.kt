@@ -1,58 +1,63 @@
 package com.github.spookie6
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents
+import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents.ModifyCallback
+import net.fabricmc.fabric.api.item.v1.DefaultItemComponentEvents.ModifyContext
 import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.minecraft.component.ComponentMap
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.item.Items
 import net.minecraft.server.MinecraftServer
-import net.minecraft.text.Text
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.function.Consumer
 
 object FamilyFunction : ModInitializer {
-    private val logger = LoggerFactory.getLogger("family-function")
-    private val modScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private var server: MinecraftServer? = null
+    val logger: Logger = LoggerFactory.getLogger("family-function")
+    var server: MinecraftServer? = null
 
 	override fun onInitialize() {
 		logger.info("Loading FamilyFunction mod.")
 
-        modScope.launch {
+        ServerLifecycleEvents.SERVER_STARTED.register { srv ->
+            server = srv
+            logger.info("Server started, reference saved for broadcasting.")
+
             try {
-                WSClient.connect()
+                WSClient.start(server)
             } catch (e: Exception) {
                 logger.error("Websocket client error: $e")
             }
         }
 
-        ServerLifecycleEvents.SERVER_STARTED.register { srv ->
-            server = srv
-            logger.info("Server started, reference saved for broadcasting.")
-        }
+        ServerLifecycleEvents.SERVER_STOPPED.register { WSClient.stop() }
 
         ServerMessageEvents.CHAT_MESSAGE.register { message, sender, _ ->
+            val name: String = sender.gameProfile.name
             val content: String = message.content.string
-
-            modScope.launch {
-                try {
-                    WSClient.send("${sender.name}: $content")
-                    logger.info("[Send to ws] ${sender.name}: $content")
-                } catch (e: Exception) {
-                    logger.error("Failed to send message to websocket: $e")
-                }
+            try {
+                WSClient.send("$name: $content")
+            } catch (e: Exception) {
+                logger.error("Failed to send message to websocket: $e")
             }
         }
-	}
 
-    /**
-     * Broadcast a message to all players on the server thread safely.
-     */
-    fun broadcastMessage(message: String) {
-        val srv = server ?: return
-        srv.submit {
-            srv.playerManager.broadcast(Text.literal(message), false)
-        }
-    }
+        DefaultItemComponentEvents.MODIFY.register(ModifyCallback { context: ModifyContext? ->
+            context!!.modify(
+                Items.WIND_CHARGE,
+                Consumer { builder: ComponentMap.Builder? -> builder?.add(DataComponentTypes.MAX_STACK_SIZE, 16) })
+        })
+        DefaultItemComponentEvents.MODIFY.register(ModifyCallback { context: ModifyContext? ->
+            context!!.modify(
+                Items.BREEZE_ROD,
+                Consumer { builder: ComponentMap.Builder? -> builder?.add(DataComponentTypes.MAX_STACK_SIZE, 32) })
+        })
+        DefaultItemComponentEvents.MODIFY.register(ModifyCallback { context: ModifyContext? ->
+            context!!.modify(
+                Items.END_CRYSTAL,
+                Consumer { builder: ComponentMap.Builder? -> builder?.add(DataComponentTypes.MAX_STACK_SIZE, 1) })
+        })
+	}
 }
